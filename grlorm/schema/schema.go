@@ -16,7 +16,7 @@ type Schema struct {
 	Model interface{}
 	Name string
 	Fields []*Field
-	FieldName []string
+	FieldNames []string
 	fieldMap map[string]*Field
 }
 
@@ -43,9 +43,20 @@ func Parse(dest interface{},d dialect.Dialect)  *Schema{
 				field.Tag = v
 			}
 			schema.Fields = append(schema.Fields,field)
-			schema.FieldName = append(schema.FieldName,p.Name)
+			schema.FieldNames = append(schema.FieldNames,p.Name)
 			schema.fieldMap[p.Name] = field
 		}
 	}
 	return schema
+}
+
+func (s * Schema) RecordValues(dest interface{})[]interface{}  {
+	destValue := reflect.Indirect(reflect.ValueOf(dest))
+
+	var fieldValues []interface{}
+
+	for _,field := range s.Fields{
+		fieldValues = append(fieldValues,destValue.FieldByName(field.Name).Interface())
+	}
+	return fieldValues
 }

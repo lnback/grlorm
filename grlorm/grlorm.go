@@ -2,12 +2,15 @@ package grlorm
 
 import (
 	"database/sql"
+	"grlorm/dialect"
 	"grlorm/log"
 	"grlorm/session"
 )
 
 type Engine struct {
 	db * sql.DB
+
+	dialect dialect.Dialect
 }
 
 func NewEngine(driver ,source string) (engine * Engine,err error){
@@ -22,9 +25,14 @@ func NewEngine(driver ,source string) (engine * Engine,err error){
 		log.Error(err)
 		return
 	}
-
+	dial , ok := dialect.GetDialect(driver)
+	if !ok {
+		log.Errorf("dialect %s Not Found",driver)
+		return
+	}
 	engine = &Engine{
 		db: db,
+		dialect: dial,
 	}
 
 	log.Info("Connect database success")
@@ -38,6 +46,6 @@ func (e * Engine) Close()  {
 	log.Info("Close database success")
 }
 
-func (e * Engine)  NewSession() * session.Session{
-	return session.New(e.db)
+func (e * Engine) NewSession() * session.Session{
+	return session.New(e.db,e.dialect)
 }
