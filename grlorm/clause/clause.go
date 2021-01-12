@@ -5,7 +5,9 @@ import (
 )
 
 type Clause struct {
+	//存放一个sql语句的map
 	sql map[Type]string
+	//存放一个vars的map 每一个value都是二维数组
 	sqlVars map[Type][] interface{}
 }
 
@@ -18,6 +20,9 @@ const (
 	LIMIT
 	WHERE
 	ORDERBY
+	UPDATE
+	DELETE
+	COUNT
 )
 
 func (c * Clause) Set(name Type,vars ...interface{})  {
@@ -34,11 +39,13 @@ func (c * Clause) Build(orders ...Type)(string,[]interface{})  {
 	var sqls []string
 	var vars []interface{}
 
+	//根据type的顺序来生成sql
 	for _,order := range orders{
 		if sql,ok := c.sql[order];ok{
 			sqls = append(sqls,sql)
 			vars = append(vars,c.sqlVars[order]...)
 		}
 	}
+	//生成一个 sql sql sql sql的sql语句
 	return strings.Join(sqls," "),vars
 }

@@ -23,6 +23,37 @@ func init()  {
 	generators[WHERE] = _where
 
 	generators[ORDERBY] = _orderBy
+
+	generators[UPDATE] = _update
+
+	generators[DELETE] = _delete
+
+	generators[COUNT] = _count
+}
+
+func _count(values ...interface{}) (string, []interface{}) {
+	return _select(values[0],[]string{"count(*)"})
+}
+
+func _delete(values ...interface{}) (string, []interface{}) {
+	return fmt.Sprintf("DELETE FROM %s",values[0]),[]interface{}{}
+}
+
+func _update(values ...interface{}) (string, []interface{}) {
+	tableName := values[0]
+
+	m := values[1].(map[string]interface{})
+
+	var keys []string
+
+	var vars []interface{}
+
+	for k,v := range m{
+		keys = append(keys,k+"= ?")
+		vars = append(vars,v)
+	}
+
+	return fmt.Sprintf("UPDATE %s SET %s",tableName,strings.Join(keys,",")),vars
 }
 
 func genBindVars(num int)  string{
@@ -31,15 +62,18 @@ func genBindVars(num int)  string{
 	for i := 0; i < num;i++{
 		vars = append(vars,"?")
 	}
+	//每个?之后加一个,变成?,?,? ，类似于占位符
 	return strings.Join(vars,", ")
 }
-
+//返回insert 字句 values[0]是表名
 func _insert(values ...interface{})  (string,[]interface{}){
+
 	tableName := values[0]
 	fields := strings.Join(values[1].([]string),",")
 
 	return fmt.Sprintf("INSERT INTO %s (%v)",tableName,fields),[]interface{}{}
 }
+//返回values
 func _values(values ...interface{}) (string,[]interface{})  {
 	var bindStr string
 	var sql strings.Builder

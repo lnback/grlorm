@@ -3,6 +3,7 @@ package session
 import (
 	"database/sql"
 	"grlorm/dialect"
+	"os"
 	"testing"
 )
 
@@ -45,9 +46,16 @@ func TestSession_Find(t *testing.T) {
 }
 var (
 	TestDB * sql.DB
-	TestDia, _ = dialect.GetDialect("sqlite3")
+	TestDia, _ = dialect.GetDialect("mysql")
 )
 
+func TestMain(m *testing.M)  {
+	TestDB,_ = sql.Open("mysql","root:123456@tcp(192.168.33.30:3306)/test?charset=utf8&parseTime=True&loc=Local")
+	code := m.Run()
+	_ = TestDB.Close()
+	os.Exit(code)
+
+}
 func NewSession() *Session {
 	return New(TestDB,TestDia)
 }
